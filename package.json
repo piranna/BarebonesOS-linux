@@ -4,7 +4,7 @@
   "scripts": {
     "BigRedButton": "scripts/BigRedButton",
     "start": "scripts/start",
-    "prestart": "scripts/prestart",
+    "install": "scripts/install",
     "test": "scripts/test"
   },
   "author": "Jesús Leganés Combarro 'piranna' <piranna@gmail.com>",
