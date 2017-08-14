@@ -1,42 +1,32 @@
 {
-  "name": "nodeos-barebones",
+  "name": "barebonesos-linux",
   "version": "1.0.0-RC3.1",
   "scripts": {
     "BigRedButton": "scripts/BigRedButton",
-    "build": "scripts/build",
-    "prebuild": "scripts/prebuild",
-    "install": "prebuild-install -d https://github.com/NodeOS/nodeos-barebones/releases/download/v{version}/{platform}-{arch}.tar.gz || (buildDependencies && npm run build)",
     "start": "scripts/start",
-    "test": "scripts/test",
-    "unbuild": "scripts/unbuild"
+    "prestart": "scripts/prestart",
+    "test": "scripts/test"
   },
   "author": "Jesús Leganés Combarro 'piranna' <piranna@gmail.com>",
   "license": "MIT",
+  "bin": "scripts/start",
   "dependencies": {
-    "builddependencies": "^0.0.1",
-    "prebuild-install": "^2.1.0"
+    "download-manager": "^0.1.3",
+    "nodeos-cross-toolchain": "^1.0.0-RC3.1"
   },
-  "buildDependencies": [
-    "download-manager",
-    "nodeos-nodejs"
-  ],
   "devDependencies": {
     "ci-publish": "^1.3.0",
-    "download-manager": "^0.1.3",
     "minimist": "^1.2.0",
-    "nodeos-cross-toolchain": "^1.0.0-RC3.1",
-    "nodeos-nodejs": "^6.9.5-0",
-    "prebuild": "^6.0.0",
-    "qemu": "^2.8.0",
-    "suppose": "^0.6.1"
+    "qemu": "^2.9.0",
+    "suppose": "^0.6.2"
   },
-  "description": "Generate a NodeOS barebones image",
+  "description": "Compile from scratch a static Linux kernel (no modules)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/NodeOS/nodeos-barebones.git"
+    "url": "https://github.com/piranna/BarebonesOS-linux.git"
   },
   "bugs": {
-    "url": "https://github.com/NodeOS/nodeos-barebones/issues"
+    "url": "https://github.com/piranna/BarebonesOS-linux/issues"
   },
-  "homepage": "https://github.com/NodeOS/nodeos-barebones"
+  "homepage": "https://github.com/piranna/BarebonesOS-linux"
 }

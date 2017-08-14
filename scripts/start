@@ -1,76 +1,166 @@
-#!/usr/bin/env node
+#!/usr/bin/env bash
 
-var readFileSync = require('fs').readFileSync
-var spawn        = require('child_process').spawn
-
-var processArguments = require('./processArguments')
+# This script compiles from scratch a statically compiled Linux kernel (no
+# modules) including an user provided custom initramfs image
 
 
-const QEMU_SYSTEM = require('qemu')+'/bin/qemu-system-'
+set -o pipefail
 
 
-var args = processArguments(process.argv.slice(2))
+while getopts ":c:i:l:o:" opt; do
+  case $opt in
+    c)
+      CONFIG="$OPTARG"  # Linux kernel extra configuration flags
+    ;;
 
-var cpu = args.cpu
-var machine = args.machine
+    i)
+      INITRAM="$OPTARG"  # Tar.gz of initram image
+    ;;
 
-var append =
-[
-  'ip=dhcp'
-]
-var graphicFlag
+    l)
+      LINUX="$OPTARG"  # Location of the (probably patched) Linux kernel sources
+    ;;
 
-switch(process.argv[2])
-{
-  case 'nographic':
-    append.push('console=ttyS0')  // redirect to terminal
-    graphicFlag = 'nographic'
-  break
+    o)
+      OUT_DIR="$OPTARG"  # Output directory
+    ;;
+  esac
+done
 
-  case 'curses':
-    append.push('vga=extended')  // 80x50
-    graphicFlag = 'curses'
-  break
+if [[ -z "$OUT_DIR" ]]; then
+  echo "-o is mandatory"
+  exit 1
+fi
 
-  default:
-    append.push('vga=0x344')  // 1024x768x32
-}
 
-var command = QEMU_SYSTEM+args.cpu_family
+TOOLCHAIN=`node -p "require('nodeos-cross-toolchain')"`
 
-var args =
-[
-  '-enable-kvm',
-  '-vga', 'std',
-  '-m', '256M',
-  '-redir', 'tcp:50080::80',
-  '-redir', 'tcp:50443::443',
-  '--kernel', 'out/'+cpu+'/linux',
-  '-append',  append.join(' ')
-]
+source $TOOLCHAIN/scripts/adjustEnvVars.sh || exit $?
 
-if(machine) args.unshift('-machine', machine)
+PATH=$TOOLCHAIN/bin:$PATH
 
-if(graphicFlag)
-  args.push('-'+graphicFlag)
 
-// check if kvm is supported
-var kvm = /(vmx|svm)/;
-var contents = "";
+#
+# Define source code paths
+#
 
-try
-{
-  contents = readFileSync('/proc/cpuinfo');
-} catch(e){
-  throw(e);
-}
+LINUX=${LINUX:-`pwd`/deps/linux}
 
-if(kvm.test(contents) === false)
-{
-  // disable kvm
-  console.log("Your computer does not support kvm. NodeOS will be slower without it.");
-  args.shift();
-}
 
-spawn(command, args, {stdio: 'inherit'})
-.on('error', console.trace.bind(console))
+#
+# Define steps paths
+#
+
+OBJ_DIR=/tmp/`echo $INITRAM | sed 's,/,_,g'`
+
+
+#
+# Build cross-compiler (if needed)
+#
+
+(
+  cd $TOOLCHAIN
+
+  BITS=$BITS CPU=$CPU MACHINE=$MACHINE npm install --production || exit $?
+) || exit $?
+
+
+#
+# Configure the system
+#
+
+STEP_DIR=$OBJ_DIR
+
+echo -e "${WHT}Compiling Linux${CLR}"
+
+rmStep $STEP_DIR
+mkdir -p $STEP_DIR
+
+MAKE="$MAKE O=$STEP_DIR ARCH=$ARCH CROSS_COMPILE=$TARGET-"
+
+(
+  cd $LINUX
+
+  # Configure
+  $MAKE1 mrproper || exit 10
+
+  case $MACHINE in
+    pc)
+      DEFCONFIG=${CPU_FAMILY}_defconfig
+    ;;
+
+    raspi)
+      DEFCONFIG=bcm2835_defconfig
+    ;;
+
+    raspi2)
+      #DEFCONFIG=bcm2709_defconfig
+      DEFCONFIG=bcm2835_defconfig
+      #DEFCONFIG=bcm2836_defconfig
+    ;;
+
+    raspi3)
+      DEFCONFIG=bcm2837_defconfig
+    ;;
+
+    *)
+      echo "Unknown MACHINE '$MACHINE'"
+      exit 11
+    ;;
+  esac
+
+  $MAKE $DEFCONFIG || exit 12
+) || err $?
+
+# Set custom configurations
+eval "echo \"$(< resources/config)\"" >> $STEP_DIR/.config || err 13
+
+if [[ $CONFIG ]]; then
+  eval "echo \"$(< $CONFIG)\"" >> $STEP_DIR/.config || err 14
+fi
+
+(
+  cd $LINUX
+
+  # Fix and clean configuration
+  $MAKE oldnoconfig || exit 15
+
+  # Compile
+  $MAKE || exit 16
+) || err $?
+
+echo -e "${GRN}Successfully compiled Linux${CLR}"
+
+
+#
+# Copy the compiled kernel
+#
+
+mkdir -p $OUT_DIR || exit 20
+
+BOOT=$OBJ_DIR/arch/$ARCH/boot
+
+case $MACHINE in
+  pc)
+    cp $BOOT/bzImage $OUT_DIR || exit 21
+  ;;
+
+  raspi|raspi2|raspi3)
+    cp $BOOT/zImage $OUT_DIR || exit 22
+
+    mkdir -p $OUT_DIR/dts           &&
+    cp $BOOT/dts/*.dtb $OUT_DIR/dts || exit 23
+  ;;
+
+  *)
+    echo "Unknown MACHINE '$MACHINE'"
+    exit 24
+  ;;
+esac
+
+
+#
+# Remove build stage files
+#
+
+rmStep $OBJ_DIR

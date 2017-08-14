@@ -18,7 +18,7 @@ function processArguments(argv)
   var libc = 'musl'
   var machine
 
-  switch(cpu)
+  switch(cpu.split('-')[0])
   {
     case 'arm1176jzf-s':
       cpu_family = 'arm'

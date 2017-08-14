@@ -36,9 +36,8 @@ var args =
 
 if(machine) args.unshift('-machine', machine)
 
-exe = suppose(command, args)
-  .when(/> /).respond('setTimeout(console.log, 2000, "this is","a test")\n')
-  .when(/this is a test/, function(exe)
+exe = suppose(command, args, {debug: true})
+  .when(/end Kernel panic - not syncing: VFS: Unable to mount/, function(exe)
   {
     exe.kill()
   })

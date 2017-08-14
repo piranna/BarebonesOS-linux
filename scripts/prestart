@@ -5,13 +5,11 @@ var manager = require('download-manager')
 
 // Source versions
 
-const INIT_VERSION  = "master"
 const LINUX_VERSION = "4.8.5"
 
 
 // Source URLs
 
-const INIT_URL  = "https://github.com/piranna/nodeos-init/archive/"+INIT_VERSION+".tar.gz"
 const LINUX_URL = "https://www.kernel.org/pub/linux/kernel/v4.x/linux-"+LINUX_VERSION+".tar.gz"
 
 
@@ -31,10 +29,6 @@ const LINUX_CJKTTY_PATCH = "https://raw.githubusercontent.com/NodeOS/cjktty-patc
 
 var downloads =
 [
-  {
-    name: 'init',
-    url: INIT_URL
-  },
   {
     name: 'linux',
     url: LINUX_URL,
