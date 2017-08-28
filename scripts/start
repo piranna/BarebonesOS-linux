@@ -163,4 +163,4 @@ esac
 # Remove build stage files
 #
 
-rmStep $OBJ_DIR
+rmStep $OBJ_DIR || true
