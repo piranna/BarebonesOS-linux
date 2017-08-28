@@ -1,6 +1,6 @@
 {
   "name": "barebonesos-linux",
-  "version": "1.0.0",
+  "version": "4.12.7",
   "scripts": {
     "BigRedButton": "scripts/BigRedButton",
     "start": "scripts/start",
