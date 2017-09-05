@@ -44,7 +44,7 @@ PATH=$TOOLCHAIN/bin:$PATH
 # Define source code paths
 #
 
-LINUX=${LINUX:-`pwd`/deps/linux}
+LINUX=${LINUX:-`node -p "require('nodeos-linux')"`/linux}
 
 
 #

@@ -1,18 +1,17 @@
 {
   "name": "barebonesos-linux",
-  "version": "4.12.7",
+  "version": "1.0.0",
   "scripts": {
     "BigRedButton": "scripts/BigRedButton",
     "start": "scripts/start",
-    "install": "scripts/install",
     "test": "scripts/test"
   },
   "author": "Jesús Leganés Combarro 'piranna' <piranna@gmail.com>",
   "license": "MIT",
   "bin": "scripts/start",
   "dependencies": {
-    "download-manager": "^0.1.4",
-    "nodeos-cross-toolchain": "^1.0.0-RC3.1"
+    "nodeos-cross-toolchain": "^1.0.0-RC3.1",
+    "nodeos-linux": "^4.13.0"
   },
   "devDependencies": {
     "ci-publish": "^1.3.0",
