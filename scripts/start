@@ -7,6 +7,35 @@
 set -o pipefail
 
 
+# http://www.daveeddy.com/2015/04/13/dirname-case-study-for-bash-and-node/
+__dirname() {
+  local prog=${BASH_SOURCE[0]}
+  [[ -n $prog ]] || return 1
+
+  # resolve symlinks (of script)
+  while [[ -L $prog ]]; do
+    local rl=$(readlink "$prog")
+    # readlink(1) is not portable, so assert it exits 0 and also returns
+    # non-empty string
+    if (($? != 0)) || [[ -z $rl ]]; then
+      return 1
+    fi
+
+    # symlinks can be relative, in which case make them "relative" to the
+    # original program dirname
+    if [[ ${rl:0:1} == '/' ]]; then
+      prog=$rl
+    else
+      prog=$(dirname "$prog")/$rl
+    fi
+  done
+
+  # resolve the dir
+  (CDPATH= cd "$(dirname "$prog")" && pwd)
+}
+__dirname=$(__dirname)
+
+
 while getopts ":c:i:l:o:" opt; do
   case $opt in
     c)
@@ -113,7 +142,7 @@ MAKE="$MAKE O=$STEP_DIR ARCH=$ARCH CROSS_COMPILE=$TARGET-"
 ) || err $?
 
 # Set custom configurations
-eval "echo \"$(< resources/config)\"" >> $STEP_DIR/.config || err 13
+eval "echo \"$(< $__dirname/../resources/config)\"" >> $STEP_DIR/.config || err 13
 
 if [[ $CONFIG ]]; then
   eval "echo \"$(< $CONFIG)\"" >> $STEP_DIR/.config || err 14
