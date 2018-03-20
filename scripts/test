@@ -1,21 +1,17 @@
 #!/usr/bin/env node
 
-var suppose = require('suppose')
 
-var processArguments = require('./processArguments')
+const suppose = require('suppose')
 
+const processArguments = require('./processArguments')
 
 const QEMU_SYSTEM = require('qemu')+'/bin/qemu-system-'
 const TIMEOUT = 30
 
 
-var args = processArguments(process.argv.slice(2))
+const {cpu, cpu_family, machine} = processArguments(process.argv.slice(2))
 
-var cpu = args.cpu
-var machine = args.machine
-
-var exe
-var timeout = setTimeout(function()
+const timeout = setTimeout(function()
 {
   exe.kill()
 
@@ -24,19 +20,19 @@ var timeout = setTimeout(function()
 }, TIMEOUT*1000)
 
 
-var command = QEMU_SYSTEM+args.cpu_family
+const command = QEMU_SYSTEM+cpu_family
 
-var args =
+const args =
 [
 //  '-enable-kvm',  // Give problems running inside VMs, like Travis-CI
   '-nographic',
-  '--kernel', 'out/'+cpu+'/bzImage',
+  '--kernel', `out/${cpu}/bzImage`,
   '-append',  'console=ttyS0'
 ]
 
 if(machine) args.unshift('-machine', machine)
 
-exe = suppose(command, args, {debug: true})
+const exe = suppose(command, args, {debug: true})
   .when(/end Kernel panic - not syncing: VFS: Unable to mount/, function(exe)
   {
     exe.kill()
