@@ -79,7 +79,7 @@ LINUX=${LINUX:-`node -p "require('nodeos-linux')"`/linux}
 # Define steps paths
 #
 
-OBJ_DIR=/tmp/`echo $INITRAM | sed 's,/,_,g'`
+OBJ_DIR=`mktemp -d`
 
 
 #
@@ -100,9 +100,6 @@ OBJ_DIR=/tmp/`echo $INITRAM | sed 's,/,_,g'`
 STEP_DIR=$OBJ_DIR
 
 echo -e "${WHT}Compiling Linux${CLR}"
-
-rmStep $STEP_DIR
-mkdir -p $STEP_DIR
 
 MAKE="$MAKE O=$STEP_DIR ARCH=$ARCH CROSS_COMPILE=$TARGET-"
 
