@@ -112,11 +112,9 @@ trap cleanup EXIT
 # Configure the system
 #
 
-STEP_DIR=$OBJ_DIR
-
 echo -e "${WHT}Compiling Linux${CLR}"
 
-MAKE="$MAKE O=$STEP_DIR ARCH=$ARCH CROSS_COMPILE=$TARGET-"
+MAKE="$MAKE O=$OBJ_DIR ARCH=$ARCH CROSS_COMPILE=$TARGET-"
 
 (
   cd $LINUX
@@ -153,10 +151,10 @@ MAKE="$MAKE O=$STEP_DIR ARCH=$ARCH CROSS_COMPILE=$TARGET-"
 ) || exit $?
 
 # Set custom configurations
-eval "echo \"$(< $__dirname/../resources/config)\"" >> $STEP_DIR/.config || exit 13
+eval "echo \"$(< $__dirname/../resources/config)\"" >> $OBJ_DIR/.config || exit 13
 
 if [[ $CONFIG ]]; then
-  eval "echo \"$(< $CONFIG)\"" >> $STEP_DIR/.config || exit 14
+  eval "echo \"$(< $CONFIG)\"" >> $OBJ_DIR/.config || exit 14
 fi
 
 (
