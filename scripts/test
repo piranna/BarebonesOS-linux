@@ -1,15 +1,22 @@
 #!/usr/bin/env node
 
 const {spawn} = require('child_process')
+const {mkdtempSync} = require('fs')
+const {tmpdir} = require('os')
+const {sep} = require('path')
 
 const suppose = require('suppose')
 
 const processArguments = require('./processArguments')
 
 
+// Create temporaty file
+const tmp = mkdtempSync(`${tmpdir()}${sep}`)
+
+
 // Compile a BarebonesOS linux kernel
 
-spawn('npm', ['start', '--', '-o', '/tmp'], {stdio: 'inherit'})
+spawn('npm', ['start', '--', '-o', tmp], {stdio: 'inherit'})
 .on('exit', function(code, signal)
 {
   code = code || signal
@@ -40,7 +47,7 @@ spawn('npm', ['start', '--', '-o', '/tmp'], {stdio: 'inherit'})
   [
   //  '-enable-kvm',  // Give problems running inside VMs, like Travis-CI
     '-nographic',
-    '--kernel', `out/${cpu}/bzImage`,
+    '--kernel', `${tmp}/bzImage`,
     '-append',  'console=ttyS0'
   ]
 
