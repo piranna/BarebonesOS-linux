@@ -76,10 +76,25 @@ LINUX=${LINUX:-`node -p "require('nodeos-linux')"`/linux}
 
 
 #
-# Define steps paths
+# Create objects path
+# Based on https://stackoverflow.com/a/34676160/586382
 #
 
 OBJ_DIR=`mktemp -d`
+
+# check if tmp dir was created
+if [[ ! "$OBJ_DIR" || ! -d "$OBJ_DIR" ]]; then
+  echo "Could not create temp dir"
+  exit 1
+fi
+
+# deletes the temp directory
+function cleanup {
+  rm -rf $OBJ_DIR
+}
+
+# register the cleanup function to be called on the EXIT signal
+trap cleanup EXIT
 
 
 #
@@ -135,13 +150,13 @@ MAKE="$MAKE O=$STEP_DIR ARCH=$ARCH CROSS_COMPILE=$TARGET-"
   esac
 
   $MAKE $DEFCONFIG || exit 12
-) || err $?
+) || exit $?
 
 # Set custom configurations
-eval "echo \"$(< $__dirname/../resources/config)\"" >> $STEP_DIR/.config || err 13
+eval "echo \"$(< $__dirname/../resources/config)\"" >> $STEP_DIR/.config || exit 13
 
 if [[ $CONFIG ]]; then
-  eval "echo \"$(< $CONFIG)\"" >> $STEP_DIR/.config || err 14
+  eval "echo \"$(< $CONFIG)\"" >> $STEP_DIR/.config || exit 14
 fi
 
 (
@@ -152,7 +167,7 @@ fi
 
   # Compile
   $MAKE || exit 16
-) || err $?
+) || exit $?
 
 echo -e "${GRN}Successfully compiled Linux${CLR}"
 
@@ -182,10 +197,3 @@ case $MACHINE in
     exit 24
   ;;
 esac
-
-
-#
-# Remove build stage files
-#
-
-rmStep $OBJ_DIR || true
