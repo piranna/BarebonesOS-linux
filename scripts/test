@@ -30,7 +30,9 @@ spawn('npm', ['start', '--', '-o', tmp], {stdio: 'inherit'})
   const TIMEOUT = 30
 
 
-  const {cpu, cpu_family, machine} = processArguments(process.argv.slice(2))
+  // const {cpu_family, machine} = processArguments(process.argv.slice(2))
+  const cpu_family = 'x86_64'
+  const machine = null
 
   const timeout = setTimeout(function()
   {
