@@ -55,7 +55,7 @@ spawn('npm', ['start', '--', '-o', tmp], {stdio: 'inherit'})
 
   if(machine) args.unshift('-machine', machine)
 
-  const exe = suppose(command, args, {debug: true})
+  const exe = suppose(command, args)
     .when(/end Kernel panic - not syncing: VFS: Unable to mount/, function(exe)
     {
       exe.kill()
